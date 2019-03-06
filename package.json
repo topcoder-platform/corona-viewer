@@ -2,16 +2,22 @@
   "name": "tc-events-viewer",
   "version": "1.0.0",
   "description": "TC Events Viewer",
-  "main": "app.js",
+  "repository": "https://github.com/topcoder-platform/corona-viewer",
+  "main": "src/app.js",
   "scripts": {
+    "postinstall": "cd ui && npm i && cd ../",
+    "dev": "concurrently --kill-others \"node src/app.js\" \"cd ui && npm run dev\"",
+    "prestart": "cd ui && npm run build",
     "start": "node src/app.js",
-    "lint": "standard",
-    "lint:fix": "standard --fix",
-    "postinstall": "cd ui && npm i && npm run build"
+    "lint:server": "standard",
+    "lint:fix:server": "standard --fix",
+    "lint:ui": "cd ui && npm run lint",
+    "lint:fix:ui": "cd ui && npm run lint:fix"
   },
   "author": "TCSCODER",
-  "license": "none",
+  "license": "UNLICENSED",
   "devDependencies": {
+    "concurrently": "^4.1.0",
     "standard": "^12.0.1"
   },
   "dependencies": {

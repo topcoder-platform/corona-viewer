@@ -1,0 +1,29 @@
+@import '~styles/variables';
+
+.Sidebar {
+  z-index: 10001;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 200px;
+  height: calc(100vh - 20px);
+  .topSection {
+    padding-left: 5px;
+    width: 200px;
+    height: 570px;
+    border-radius: 6px;
+    box-shadow: 0 5px 35px 5px rgba(21, 21, 22, 0.19), 0 10px 14px -4px rgba(21, 21, 22, 0.45);
+    background-color: $sidebar-main-bg-color;
+  }
+  .logo {
+    height: 77px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    img {
+      width: 71px;
+      height: 42px;
+      display: block;
+    }
+  }
+}

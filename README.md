@@ -1,5 +1,7 @@
 # TopCoder Events Viewer
 
+This codebase includes a NodeJS server (see `src/`) and a ReactJS UI (see `ui/`).
+
 ## Prerequisites
 
 - NodeJS (v10)
@@ -8,18 +10,35 @@
 
 ## Configuration
 
-Configuration for the application is at `config/default.js`.
+**Server Configuration**
+
+Configuration for the application is at `src/config/default.js`.
 The following parameters can be set in config file or in env variables:
 
-- LOG_LEVEL: the log level
-- PORT: the server port
-- REDIS_HOST: Redis host
-- REDIS_PORT: Redis port
-- REDIS_EVENT_LIST_KEY: Redis event list key
-- MAX_CACHED_EVENTS: max count of events to cache
-- GLOBAL_EVENTS_SYNC_PERIOD: period to sync global events with Redis events list, in milliseconds
-- CLIENT_EVENTS_SYNC_PERIOD: period to sync client specific events with global events, in milliseconds
-- NEXT_CLIENT_EVENT_PERIOD: period to send next event to client, in milliseconds
+- `LOG_LEVEL`: the log level
+- `PORT`: the server port
+- `REDIS_HOST`: Redis host
+- `REDIS_PORT`: Redis port
+- `REDIS_EVENT_LIST_KEY`: Redis event list key
+- `MAX_CACHED_EVENTS`: max count of events to cache
+- `GLOBAL_EVENTS_SYNC_PERIOD`: period to sync global events with Redis events list, in milliseconds
+- `CLIENT_EVENTS_SYNC_PERIOD`: period to sync client specific events with global events, in milliseconds
+- `NEXT_CLIENT_EVENT_PERIOD`: period to send next event to client, in milliseconds
+
+**UI Configuration**
+
+Configuration for the UI is at `ui/src/config/index.js`.
+The following parameters can be set in config file or in env variables:
+
+- `SERVER_URL`: The URL for the server
+- `GOOGLE_MAP_KEY`: Google Map API key
+
+Additionally, the config file includes the following UI working parameters (max number of events displayed on the map, allowed event types, ignored event types, etc.).
+
+*Adding UI Configuration Variables*
+
+New variables can added to the configuration file directly. But in order to make them configurable from the environment, the Webpack configuration needs to be updated (this is necessary because `process.env` doesn't exist in the browser). See Webpack configuration files in `ui/config/webpack/` to see how `SERVER_URL` is set. 
+Then the new variable can be added to the relevant NPM script (see how `SERVER_URL` is set in `ui/package.json` scripts).
 
 
 ## Redis setup
@@ -34,29 +53,40 @@ The following parameters can be set in config file or in env variables:
 - in the `src` folder, you may run `./redis-cli` to start a Redis client to interact with the server
 
 
+## NPM Commands
+
+```bash
+npm install					# this installs both the server and UI dependencies
+
+# Code Quality (server and UI have different linters)
+npm run lint:server 		# Standard JS linter
+npm run lint:fix:server
+npm run lint:ui 			# Air BnB Linter
+npm run lint:fix:ui
+```
+
+## UI Development
+
+After proper configuration (see sections above) and running `npm install`: 
+
+```bash
+npm run dev
+```
+
+This will build the development distribution for the UI. It will rebuild on change on the UI `src` files and also reload the browser on change (using BrowserSync). 
+This will also run the server. The two processes will run concurrently.
+Because of the BrowserSync configuration, the UI will be available at `http://localhost:3100` (not `http://localhost:3000`).
+
+
 ## Local Deployment
 
-- Install dependencies `npm install`
-- Run lint `npm run lint`
-- Run lint fix `npm run lint:fix`
-- Start app `npm start`
-- App is running at `http://localhost:3000`
+After proper configuration (see sections above) and running `npm install`: 
 
+```bash
+npm start
+```
 
-## Verification
-
-- follow corona/README.md to setup corona app
-- this app and corona app should use same Redis server and same events list key in Redis
-- start both corona app and this app
-- follow corona/README.md to send messages to Kafka, then corona app will consume them and put coressponding events to Redis
-  !!IMPORTANT!!:
-  when sending messages to Kafka, timestamp fields should be incremented one by one;
-  for messages of same timestamp, they must have some difference, NOT exactly same messages of same timestamp;
-  otherwise this app may not detect the new message.
-- then this app will consume the events in Redis and send events to front end via web socket
-- browse front end UI (`http://localhost:3000`), it will show the events details; screen shot: `https://ibb.co/xJ03d5T`
-- if the front end UI is opened via Chrome, the Chrome console will also show the got events details; screen shot: `https://ibb.co/41kVBHw`
-- you may send more messages to Kafka, then finally the UI will show corresponding events one by one
+This will build the production distribution for the UI and run the server. The UI will be available at `http://localhost:3000`.
 
 
 ## Notes
@@ -65,4 +95,3 @@ The following parameters can be set in config file or in env variables:
   Instead, in the src/app.js, there is a global events array refreshed periodically to sync with Redis latest events,
   and each client connection will sync its local events with this global events,
   so the Redis calls are minimal, there is only global sync calls of Redis, no matter how many concurrent users.
-

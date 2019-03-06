@@ -18,10 +18,10 @@ const server = http.Server(app)
 const io = require('socket.io')(server)
 
 app.set('port', config.PORT)
-app.use(express.static(path.join(__dirname, '../ui/dist/ui')))
+app.use(express.static(path.join(__dirname, '../ui/dist')))
 app.use(cors())
 app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../ui/dist/ui/index.html'))
+  res.sendFile(path.join(__dirname, '../ui/dist/index.html'))
 })
 app.use((req, res) => {
   res.status(404).json({ error: 'route not found' })

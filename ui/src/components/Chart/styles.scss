@@ -1,0 +1,28 @@
+@import '~styles/variables';
+
+.Chart {
+  width: 190px;
+  height: 158px;
+  border-radius: 4px;
+  background-color: $sidebar-chart-bg-color; 
+  .inner {
+    display: flex;
+    position: relative;
+    justify-content: space-evenly;
+    width: 190px;
+    height: 152px;
+    margin-top: 6px;
+    align-items: flex-end; 
+    div {
+      border-radius: 1px;
+      background: $sidebar-bar-color;
+    }
+    div.zero {
+      height: 4px;
+      background: $sidebar-bar-zero-color;
+    }
+    div.today {
+      background: $sidebar-bar-today-color;
+    }
+  }
+}

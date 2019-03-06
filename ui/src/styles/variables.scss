@@ -1,0 +1,37 @@
+
+// app color palette
+$corona-white: #ffffff;
+$corona-blue: #43DAFD;
+$corona-green: #12b81c;
+$corona-orange: #feb902;
+$corona-red: #FB3313;
+$corona-gray: #7f7b7a;
+
+// other colors
+$app-bg-color: #003846;
+$sidebar-section-header: #99c3cc;
+
+// event variables
+$event-dot-outer-diameter: 18px;
+$event-dot-inner-diameter: 6px;
+$event-dot-color: $corona-green;
+$event-dot-active-color: rgba(17, 164, 27, 0.55);
+$event-bg-color: rgba(17, 164, 27, 0.8);
+$event-text-color: #e5f3f5;
+
+// sidebar variables
+$sidebar-main-bg-color: #045f7e;
+$sidebar-secondary-bg-color: rgba(0, 17, 20, 0.7);
+
+// sidebar chart variables
+$sidebar-chart-bg-color: #053241;
+$sidebar-bar-color: #0a6d90;
+$sidebar-bar-zero-color: #032029;
+$sidebar-bar-today-color: $corona-white;
+
+// sidebar tracks variables
+$track-unselected-color: $corona-gray;
+$track-design-color: $corona-blue;
+$track-development-color: $corona-green;
+$track-data-science-color: $corona-orange;
+$track-algorithm-color: $corona-red;
