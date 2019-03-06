@@ -5,8 +5,8 @@
   "repository": "https://github.com/topcoder-platform/corona-viewer",
   "main": "src/index.html",
   "scripts": {
-    "dev": "rimraf dist && SERVER_URL=http://localhost:3000 webpack --config ./config/webpack/development.js --progress --profile --colors",
-    "build": "rimraf dist && SERVER_URL=http://localhost:3000 webpack --config ./config/webpack/production.js --progress --profile --colors",
+    "dev": "rimraf dist && SERVER_URL=https://corona-viewer.herokuapp.com webpack --config ./config/webpack/development.js --progress --profile --colors",
+    "build": "rimraf dist && SERVER_URL=https://corona-viewer.herokuapp.com webpack --config ./config/webpack/production.js --progress --profile --colors",
     "lint": "eslint --ext .js,.jsx .",
     "lint:fix": "eslint --fix --ext .js,.jsx ."
   },
