@@ -45,6 +45,14 @@ const normalizeEvent = (ev) => {
   return event;
 };
 
+const getURLParams = () => {
+  const searchParams = new URLSearchParams(window.location.search);
+  const keys = Array.from(searchParams.keys());
+  const entries = keys.map(key => ({ key, value: searchParams.getAll(key) }));
+
+  return entries;
+};
+
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -58,6 +66,8 @@ class App extends React.Component {
 
   componentDidMount() {
     const socket = openSocket(SERVER_URL);
+    const paramFilters = getURLParams();
+
     socket.on('message', (eventStr) => {
       const evt = normalizeEvent(JSON.parse(eventStr));
 
@@ -75,6 +85,15 @@ class App extends React.Component {
         // app makes the UI seem broken; don't display them
         // eslint-disable-next-line
         console.log(`This event is not yet handled (type: ${evt.type}; topic: ${evt.topic})`);
+        return;
+      }
+
+      // check that the url filters are matching the new event
+      const isMatchingFilters = paramFilters.every(filter => (
+        filter.value.indexOf(evt[filter.key]) > -1));
+      if (!isMatchingFilters) {
+        // eslint-disable-next-line
+        console.log(`Event filtered out (type: ${evt.type}; topic: ${evt.topic})`);
         return;
       }
 

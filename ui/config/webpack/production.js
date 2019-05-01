@@ -25,15 +25,27 @@ module.exports = merge(baseConfig, {
     publicPath: '/',
   },
   optimization: {
+    removeAvailableModules: false,
+    removeEmptyChunks: false,
+		splitChunks: {
+			cacheGroups: {
+				commons: {
+					test: /[\\/]node_modules[\\/]/,
+					name: 'vendors',
+					chunks: 'all'
+				}
+			}
+		},
     minimizer: [
       new UglifyJsPlugin({
         cache: true,
         parallel: true,
-        sourceMap: true, // set to true if you want JS source maps
+        sourceMap: false, // set to true if you want JS source maps
       }),
       new OptimizeCSSAssetsPlugin({}),
     ],
   },
+  devtool: '',
   plugins: [
     // extracts the css from the js files and puts them on a separate .css file. this is for
     // performance and is used in prod environments. Styles load faster on their own .css
@@ -83,4 +95,12 @@ module.exports = merge(baseConfig, {
       },
     ],
   },
+  performance: {
+    maxAssetSize: 512000,
+    maxEntrypointSize: 512000,
+    assetFilter: function(assetFilename) {
+      // exclude vendor bundle from performance warnings
+      return !assetFilename.startsWith('vendor') && assetFilename.endsWith('.js');
+    }
+  }
 });
