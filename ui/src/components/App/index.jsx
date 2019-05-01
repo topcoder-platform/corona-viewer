@@ -90,7 +90,7 @@ class App extends React.Component {
 
       // check that the url filters are matching the new event
       const isMatchingFilters = paramFilters.every(filter => (
-        filter.value.indexOf(evt[filter.key]) > -1));
+        filter.value.indexOf(`${evt[filter.key]}`) > -1));
       if (!isMatchingFilters) {
         // eslint-disable-next-line
         console.log(`Event filtered out (type: ${evt.type}; topic: ${evt.topic})`);
