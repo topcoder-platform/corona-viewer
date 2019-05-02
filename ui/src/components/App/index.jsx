@@ -38,8 +38,8 @@ const normalizeEvent = (ev) => {
   }
   if ('createdAt' in event) {
     // add display createdAt string
-    const m = moment(event.createdAt, 'YYYY-MM-DDTHH:mm:ss.SSS');
-    event.createdAtStr = m.format('MM/DD/YYYY HH:mm');
+    const m = moment.utc(event.createdAt).toDate();
+    event.createdAtStr = moment(m).format('MM/DD/YYYY HH:mm');
   }
 
   return event;

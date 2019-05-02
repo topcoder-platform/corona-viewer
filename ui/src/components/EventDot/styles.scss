@@ -27,6 +27,9 @@
   }
   &.active {
     background: $event-dot-active-color;
+    .inner {
+      animation: none;
+    }
   }
   .inner {
     display: block;
@@ -36,5 +39,17 @@
     margin: calc(calc(#{$event-dot-outer-diameter} - #{$event-dot-inner-diameter}) / 2);
     border-radius: calc(#{$event-dot-inner-diameter} / 2);
     background: $event-dot-color;
+    animation: ripple 3s linear infinite;
+  }
+}
+
+@keyframes ripple {
+  0% {
+    box-shadow: 0 0 0 0 rgba($event-dot-color, 0.3),
+                0 0 0 1em rgba($event-dot-color, 0.3);
+  }
+  100% {
+    box-shadow: 0 0 0 1em rgba($event-dot-color, 0.3),
+                0 0 0 2em rgba($event-dot-color, 0.01);
   }
 }

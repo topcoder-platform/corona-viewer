@@ -8,7 +8,7 @@ export const GOOGLE_MAP_KEY = process.env.GOOGLE_MAP_KEY || 'AIzaSyCkA6FtiFlzkKG
  * App Constants and Working Parameters
  */
 // max number of events to display on the map
-export const MAX_EVENT_COUNT = 10;
+export const MAX_EVENT_COUNT = 60;
 // when clicked, duration an event box will appear before it fades away
 export const EVENT_FADE_TIME = 2000; // milliseconds
 // Event types handled by the UI
