@@ -7,7 +7,6 @@ This codebase includes a NodeJS server (see `src/`) and a ReactJS UI (see `ui/`)
 - NodeJS (v10)
 - Redis (v5)
 
-
 ## Configuration
 
 **Server Configuration**
