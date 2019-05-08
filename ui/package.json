@@ -8,7 +8,8 @@
     "dev": "rimraf dist && webpack --config ./config/webpack/development.js --progress --profile --colors",
     "build": "rimraf dist && webpack --config ./config/webpack/production.js --progress --profile --colors",
     "lint": "eslint --ext .js,.jsx .",
-    "lint:fix": "eslint --fix --ext .js,.jsx ."
+    "lint:fix": "eslint --fix --ext .js,.jsx .",
+    "postinstall": "npm run build"
   },
   "author": "TOPCODER",
   "license": "UNLICENSED",

@@ -7,7 +7,6 @@
   "scripts": {
     "postinstall": "cd ui && npm i && cd ../",
     "dev": "concurrently --kill-others \"node src/app.js\" \"cd ui && npm run dev\"",
-    "prestart": "cd ui && npm run build",
     "start": "node src/app.js",
     "lint:server": "standard",
     "lint:fix:server": "standard --fix",
