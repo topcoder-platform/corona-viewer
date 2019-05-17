@@ -4,9 +4,14 @@ import classNames from 'classnames';
 import styles from './styles.scss';
 
 
-const EventDot = ({ active, displayEventBox, event }) => (
+const EventDot = ({ active, displayEventBox, eventLoc }) => (
   <button
-    onClick={() => displayEventBox(event)}
+    onClick={() => {
+      if (active) {
+        return;
+      }
+      displayEventBox(eventLoc);
+    }}
     className={classNames({
       [`${styles.EventDot}`]: true,
       [`${styles.active}`]: active,
@@ -24,7 +29,7 @@ EventDot.defaultProps = {
 EventDot.propTypes = {
   active: PropTypes.bool,
   displayEventBox: PropTypes.func.isRequired,
-  event: PropTypes.shape().isRequired,
+  eventLoc: PropTypes.shape().isRequired,
 };
 
 export default EventDot;

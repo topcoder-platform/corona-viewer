@@ -1,0 +1,46 @@
+@import '~styles/variables';
+
+.Slider {
+  bottom: 0%;
+  z-index: 20001;
+  left: 300px;
+  margin-bottom: 25px;
+  position: fixed;
+  width: calc(calc(100%) - 450px);
+  height: 8px;
+  border-radius: 4px;
+  background: $slider-bg-color;
+  transition: width 0.1s ease 0s;
+  cursor: pointer;
+
+  .progress {
+    position: absolute;
+    background: $slider-bar-color;
+    border-radius: 4px;
+    top: 0px;
+    bottom: 0px;
+    left: 0px;
+  }
+  .handle {
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    background: $slider-bar-color;
+    border-radius: 100%;
+    transform: scale(1);
+    transition: transform 0.2s ease 0s;
+    top: 0px;
+    margin-top: -4px;
+    margin-left: -8px;
+  }
+  .time {
+    position: absolute;
+    color: $slider-bar-color;
+    top: -20px;
+    width: 120px;
+    user-select: none;
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+  }
+}

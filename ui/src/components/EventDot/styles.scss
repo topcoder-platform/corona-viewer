@@ -18,6 +18,10 @@
               transform 150ms ease;
   -webkit-appearance: none;
   -moz-appearance: none;
+  user-select: none;
+  -moz-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
   &:hover,
   &:focus {
     background: transparent;

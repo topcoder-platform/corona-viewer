@@ -1,57 +1,35 @@
 /**
  * This file defines helper methods
  */
-const _ = require('lodash')
 const config = require('config')
-const Redis = require('ioredis')
+const logger = require('./logger')
 
-console.log(config.GLOBAL_EVENTS_SYNC_PERIOD)
-
-const redis = new Redis(config.REDIS_CONNECTION)
+const cacheDateSpan = 24 * 60 * 60 * 1000 * Number(config.CACHED_EVENTS_MAX_DAYS_BACK + 1) // cache events of one more day since ui clients have different local timezones
 
 /**
- * Get latest configured count of events from Redis. Latest one is stored at the end of array.
- * @returns {Array} the latest configured count of events from Redis
+ * Get the min date elegible to cache
+ * @returns {Number} min date in milliseconds
  */
-async function getLatestEvents () {
-  // get Redis list length
-  const count = await redis.llen(config.REDIS_EVENT_LIST_KEY)
-  if (count === 0) {
-    return []
-  }
-  const max = Number(config.MAX_CACHED_EVENTS)
-  let start = count - max
-  if (start < 0) {
-    start = 0
-  }
-  const end = count - 1
-  const events = await redis.lrange(config.REDIS_EVENT_LIST_KEY, start, end)
-  return events
+function getMinDate () {
+  return Date.now() - cacheDateSpan
 }
 
 /**
- * Compare client and global events to get new events.
- * For each events array, latest one is stored at the end of array.
- * New array is returned, input arrays won't change.
- *
- * @param {Array} clientEvents the client events
- * @param {Array} globalEvents the global events
- * @returns {Array} the new events
+ * Get kafka options.
+ * @returns {Object} kafka options
  */
-function getNewEvents (clientEvents, globalEvents) {
-  const oldOnes = clientEvents || []
-  const newOnes = globalEvents || []
-  if (oldOnes.length === 0) {
-    return [].concat(newOnes)
+function getKafkaOptions () {
+  const options = { connectionString: config.KAFKA_URL, groupId: config.KAFKA_GROUP_ID }
+  logger.info(`KAFKA Options - ${JSON.stringify(options)}`)
+
+  if (config.KAFKA_CLIENT_CERT && config.KAFKA_CLIENT_CERT_KEY) {
+    options.ssl = { cert: config.KAFKA_CLIENT_CERT, key: config.KAFKA_CLIENT_CERT_KEY }
   }
-  const index = _.lastIndexOf(newOnes, oldOnes[oldOnes.length - 1])
-  if (index < 0) {
-    return [].concat(newOnes)
-  }
-  return newOnes.slice(index + 1)
+
+  return options
 }
 
 module.exports = {
-  getLatestEvents,
-  getNewEvents
+  getKafkaOptions,
+  getMinDate
 }

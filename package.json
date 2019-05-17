@@ -25,7 +25,8 @@
     "cors": "^2.7.1",
     "express": "^4.14.0",
     "lodash": "^4.17.11",
-    "ioredis": "^4.6.2",
+    "moment": "^2.24.0",
+    "no-kafka": "^3.4.3",
     "socket.io": "^2.2.0",
     "winston": "^3.1.0"
   },

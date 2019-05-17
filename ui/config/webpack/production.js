@@ -27,15 +27,15 @@ module.exports = merge(baseConfig, {
   optimization: {
     removeAvailableModules: false,
     removeEmptyChunks: false,
-		splitChunks: {
-			cacheGroups: {
-				commons: {
-					test: /[\\/]node_modules[\\/]/,
-					name: 'vendors',
-					chunks: 'all'
-				}
-			}
-		},
+    splitChunks: {
+      cacheGroups: {
+        commons: {
+          test: /[\\/]node_modules[\\/]/,
+          name: 'vendors',
+          chunks: 'all',
+        },
+      },
+    },
     minimizer: [
       new UglifyJsPlugin({
         cache: true,
@@ -98,9 +98,9 @@ module.exports = merge(baseConfig, {
   performance: {
     maxAssetSize: 512000,
     maxEntrypointSize: 512000,
-    assetFilter: function(assetFilename) {
+    assetFilter(assetFilename) {
       // exclude vendor bundle from performance warnings
       return !assetFilename.startsWith('vendor') && assetFilename.endsWith('.js');
-    }
-  }
+    },
+  },
 });

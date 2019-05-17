@@ -6,19 +6,87 @@ import EventBox from 'components/EventBox';
 import { GOOGLE_MAP_KEY } from 'config/index';
 import mapStyles from './mapstyles.json';
 
-const isClicked = (uuid, events) => {
-  const filtered = events.filter(e => e.uuid === uuid);
+/**
+ * Check whether event location is clicked.
+ * @param {Object} eventLoc event location
+ * @param {Array} events displayed events
+ * @return true if event location is clicked, false otherwise
+ */
+const isClicked = (eventLoc, events) => {
+  const filtered = events.filter(e => e.location === eventLoc.location);
   if (filtered.length > 0) {
     return true;
   }
   return false;
 };
 
+/**
+ * Check whether dom element is in fullscreen mode.
+ * @param {HTMLElement} element dom element
+ * @return true if element is in fullscreen mode, false otherwise
+ */
+const isFullscreen = element => (document.fullscreenElement
+  || document.webkitFullscreenElement
+  || document.mozFullScreenElement
+  || document.msFullscreenElement) === element;
+
+/**
+ * Request fullscreen mode.
+ * @param {HTMLElement} element dom element to request fullscreen
+ */
+const requestFullscreen = (element) => {
+  if (element.requestFullscreen) {
+    element.requestFullscreen();
+  } else if (element.webkitRequestFullScreen) {
+    element.webkitRequestFullScreen();
+  } else if (element.mozRequestFullScreen) {
+    element.mozRequestFullScreen();
+  } else if (element.msRequestFullScreen) {
+    element.msRequestFullScreen();
+  }
+};
+
+/**
+ * Exist fullscreen mode.
+ */
+const exitFullscreen = () => {
+  if (document.exitFullscreen) {
+    document.exitFullscreen();
+  } else if (document.webkitExitFullscreen) {
+    document.webkitExitFullscreen();
+  } else if (document.mozCancelFullScreen) {
+    document.mozCancelFullScreen();
+  } else if (document.msCancelFullScreen) {
+    document.msCancelFullScreen();
+  }
+};
+
+/**
+ * Handle on goolge maps api loaded.
+ * @param {Object} map the google map
+ * @param {Object} maps the google maps api
+ */
+const onGoogleApiLoaded = (map, maps) => {
+  const fullscreenControl = document.querySelector('.gm-fullscreen-control');
+  if (!fullscreenControl) {
+    setTimeout(() => onGoogleApiLoaded(map, maps), 100);
+    return;
+  }
+  maps.event.clearInstanceListeners(fullscreenControl, 'click');
+  maps.event.addDomListener(fullscreenControl, 'click', () => {
+    if (isFullscreen(document.body)) {
+      exitFullscreen();
+    } else {
+      requestFullscreen(document.body);
+    }
+  });
+};
+
 const EventMap = ({
-  activeEvent,
+  eventLocs,
+  activeEvents,
   clickedEvents,
   displayEventBox,
-  events,
 }) => (
   // Important! Always set the container height explicitly
   // (`google-map-react` lib)
@@ -29,34 +97,36 @@ const EventMap = ({
         lat: 20,
         lng: -10,
       }}
-      defaultZoom={3}
+      defaultZoom={2.5}
       options={{ styles: mapStyles, minZoom: 1 }}
       disableDefaultUI
+      yesIWantToUseGoogleMapApiInternals
+      onGoogleApiLoaded={({ map, maps }) => onGoogleApiLoaded(map, maps)}
     >
       {
-        events.map(event => (
+        eventLocs.map(eventLoc => (
           <EventDot
-            key={event.uuid}
-            lat={event.lat}
-            lng={event.lng}
+            key={eventLoc.location}
+            lat={eventLoc.lat}
+            lng={eventLoc.lng}
             active={
-              isClicked(event.uuid, clickedEvents)
-              || (activeEvent && activeEvent.uuid === event.uuid)
+              isClicked(eventLoc, clickedEvents)
+              || isClicked(eventLoc, activeEvents)
             }
             displayEventBox={displayEventBox}
-            event={event}
+            eventLoc={eventLoc}
           />
         ))
       }
       {
-        activeEvent ? (
+        activeEvents.map(event => (
           <EventBox
-            lat={activeEvent.lat}
-            lng={activeEvent.lng}
-            event={activeEvent}
+            key={event.uuid}
+            lat={event.lat}
+            lng={event.lng}
+            event={event}
           />
-        )
-          : null
+        ))
       }
       {
         clickedEvents.map(event => (
@@ -73,15 +143,15 @@ const EventMap = ({
 );
 
 EventMap.defaultProps = {
-  activeEvent: null,
+  activeEvents: [],
   clickedEvents: [],
 };
 
 EventMap.propTypes = {
-  activeEvent: PropTypes.shape(),
+  activeEvents: PropTypes.arrayOf(PropTypes.shape()),
   clickedEvents: PropTypes.arrayOf(PropTypes.shape()),
   displayEventBox: PropTypes.func.isRequired,
-  events: PropTypes.arrayOf(PropTypes.shape()).isRequired,
+  eventLocs: PropTypes.arrayOf(PropTypes.shape()).isRequired,
 };
 
 export default EventMap;
