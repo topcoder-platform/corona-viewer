@@ -12,9 +12,11 @@ const http = require('http')
 const Kafka = require('no-kafka')
 const moment = require('moment')
 const _ = require('lodash')
+const HttpStatus = require('http-status-codes')
 
 const logger = require('./common/logger')
 const helper = require('./common/helper')
+const routes = require('./routes')
 
 // setup express app
 const app = express()
@@ -24,6 +26,34 @@ const io = require('socket.io')(server)
 app.set('port', config.PORT)
 app.use(express.static(path.join(__dirname, '../ui/dist')))
 app.use(cors())
+
+// Load all routes
+_.each(routes, (verbs, path) => {
+  _.each(verbs, (def, verb) => {
+    const controllerPath = `./controllers/${def.controller}`
+    const method = require(controllerPath)[def.method]; // eslint-disable-line
+    if (!method) {
+      throw new Error(`${def.method} is undefined`)
+    }
+
+    const actions = []
+    actions.push((req, res, next) => {
+      req.signature = `${def.controller}#${def.method}`
+      next()
+    })
+
+    actions.push(method)
+    app[verb](path, helper.autoWrapExpress(actions))
+  })
+})
+
+// The error handler
+// eslint-disable-next-line no-unused-vars
+app.use((err, req, res, next) => {
+  logger.logFullError(err, req.signature || `${req.method} ${req.url}`)
+  res.status(err.httpStatus || HttpStatus.INTERNAL_SERVER_ERROR).json({ message: err.message })
+})
+
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../ui/dist/index.html'))
 })

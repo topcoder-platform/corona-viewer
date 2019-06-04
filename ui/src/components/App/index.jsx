@@ -8,7 +8,8 @@ import Slider from 'components/Slider';
 import Sidebar from 'components/Sidebar';
 import {
   CLICK_EVENT_FADE_TIME,
-  SLIDER_EVENT_FADE_TIME,
+  SLIDER_FORWARD_PERIOD,
+  SLIDER_FORWARD_INTERVAL,
   EXPIRED_EVENTS_CLEAN_INTERVAL,
   ALLOWED_EVENT_TOPICS,
   ALLOWED_EVENT_TYPES,
@@ -40,6 +41,18 @@ const getURLParams = () => {
   const entries = keys.map(key => ({ key, value: searchParams.getAll(key) }));
 
   return entries;
+};
+
+/**
+ * Get time key.
+ * @param {Date|Number} timestamp of date or milliseconds
+ * @returns {Number} time key
+ */
+const getTimeKey = (t) => {
+  const d = moment(t).toDate();
+  d.setSeconds(0);
+  d.setMilliseconds(0);
+  return d.getTime();
 };
 
 /**
@@ -99,9 +112,7 @@ const normalizeEvent = (evt, paramFilters) => {
       console.log(`Ignore old event (timestamp: ${m.toLocaleString()})`);
       return undefined;
     }
-    m.setSeconds(0);
-    m.setMilliseconds(0);
-    event.timeKey = m.getTime(); // timeKey is without seconds/milliseconds
+    event.timeKey = getTimeKey(m); // timeKey is without seconds/milliseconds
     event.createdAtStr = moment(m).format('MM/DD/YYYY HH:mm');
     return event;
   }
@@ -120,13 +131,9 @@ class App extends React.Component {
     super(props);
     this.state = {
       isDragging: false,
-      playTimestamp: 0,
-      sliderTimestamp: 0,
-      activeEvents: [], // active events shown
+      sliderTimestamp: Date.now(),
       clickedEvents: [], // events clicked by the user
-      eventStep: 0, // for same time and location, multiple events may exist, show them in steps
-      eventsByTime: {}, // all events received from the backend, map from timestamp to event
-      eventsByLoc: {}, // all events received from the backend, map from location to event
+      allEvents: [], // all events received from the backend
     };
     this.displayEventBox = this.displayEventBox.bind(this);
     this.play = this.play.bind(this);
@@ -136,7 +143,7 @@ class App extends React.Component {
   }
 
   /**
-   * Called when component is mount.
+   * Called when component is mounted.
    */
   componentDidMount() {
     const socket = openSocket(SERVER_URL);
@@ -164,26 +171,8 @@ class App extends React.Component {
 
       // handle new events
       this.setState((prevState) => {
-        const { eventsByTime, eventsByLoc, activeEvents } = prevState;
-
-        _.each(events, (evt) => {
-          eventsByTime[evt.timeKey] = eventsByTime[evt.timeKey] || [];
-          eventsByTime[evt.timeKey].push(evt);
-
-          eventsByLoc[evt.location] = eventsByLoc[evt.location] || [];
-          eventsByLoc[evt.location].push(evt);
-
-          if (activeEvents.length && evt.timeKey === activeEvents[0].timeKey) {
-            const found = _.find(activeEvents, ae => ae.location === evt.location);
-            if (!found) {
-              activeEvents.push(evt);
-            } else {
-              activeEvents[activeEvents.indexOf(found)] = evt;
-            }
-          }
-        });
-
-        return { eventsByTime, eventsByLoc, activeEvents };
+        const { allEvents } = prevState;
+        return { allEvents: [...allEvents, ...events] };
       });
     });
     socket.on('error', (error) => {
@@ -195,32 +184,21 @@ class App extends React.Component {
     // cleanup expired old events
     this.cleanupInterval = setInterval(() => {
       const {
-        eventsByTime, eventsByLoc, activeEvents, clickedEvents,
+        allEvents, clickedEvents,
       } = this.state;
-      const timeKeys = _.keys(eventsByTime).sort();
       const minDate = getMinDate();
       const deleted = [];
-      for (let i = 0; i < timeKeys.length; i += 1) {
-        if (timeKeys[i] < minDate) {
-          deleted.push(...eventsByTime[timeKeys[i]]);
-          delete eventsByTime[timeKeys[i]];
-        } else {
-          break;
+      for (let i = 0; i < allEvents.length; i += 1) {
+        if (allEvents[i].timestamp < minDate) {
+          deleted.push(allEvents[i]);
         }
       }
 
-      if (deleted.length) {
-        const newState = { eventsByTime, eventsByLoc };
-        newState.activeEvents = activeEvents.filter(e => !_.find(deleted, d => d.uuid === e.uuid));
-        newState.clickedEvents = clickedEvents
-          .filter(e => !_.find(deleted, d => d.uuid === e.uuid));
-
-        _.each(deleted, (d) => {
-          eventsByLoc[d.location] = eventsByLoc[d.location].filter(e => d.uuid !== e.uuid);
-          if (!eventsByLoc[d.location].length) {
-            delete eventsByLoc[d.location];
-          }
-        });
+      if (deleted.length > 0) {
+        const newState = {
+          allEvents: allEvents.filter(e => !_.find(deleted, d => d.uuid === e.uuid)),
+          clickedEvents: clickedEvents.filter(e => !_.find(deleted, d => d.uuid === e.uuid)),
+        };
         this.setState(newState);
       }
     }, EXPIRED_EVENTS_CLEAN_INTERVAL);
@@ -233,8 +211,8 @@ class App extends React.Component {
     if (this.cleanupInterval) {
       clearInterval(this.cleanupInterval);
     }
-    if (this.playTimeout) {
-      clearTimeout(this.playTimeout);
+    if (this.playInterval) {
+      clearTimeout(this.playInterval);
     }
   }
 
@@ -250,113 +228,51 @@ class App extends React.Component {
    * @param {Number} timestamp the end timestamp
    */
   onDragEnd(timestamp) {
-    const m = moment(timestamp).toDate();
-    m.setSeconds(0);
-    m.setMilliseconds(0);
-    const ts = m.getTime();
-
     this.setState({
-      isDragging: false, playTimestamp: ts, sliderTimestamp: ts, eventStep: 0,
+      isDragging: false,
+      sliderTimestamp: timestamp,
     });
   }
 
   /**
-   * On drag, show the events near to the timestamp.
+   * On drag
    * @param {Number} timestamp the drag timestamp
    */
   onDrag(timestamp) {
-    const { eventsByTime } = this.state;
+    const { isDragging } = this.state;
 
-    const timeKeys = _.keys(eventsByTime).sort();
-    let timeKey;
-    for (let i = timeKeys.length - 1; i >= 0; i -= 1) {
-      if (timeKeys[i] <= timestamp) {
-        timeKey = timeKeys[i];
-        break;
-      }
+    if (!isDragging) {
+      return;
     }
 
-    const newState = { playTimestamp: timestamp, sliderTimestamp: timestamp, eventStep: 0 };
-    if (timeKey) {
-      const groupedEvents = _.groupBy(eventsByTime[timeKey], 'location');
-      const locs = _.keys(groupedEvents);
-
-      const events = [];
-      _.each(locs, (loc) => {
-        events.push(groupedEvents[loc][groupedEvents[loc].length - 1]);
-      });
-      newState.activeEvents = events;
-    }
-    this.setState(newState);
+    this.setState({
+      sliderTimestamp: timestamp,
+    });
   }
 
   /**
    * Play with the slider bar.
    */
   play() {
-    const {
-      playTimestamp, sliderTimestamp, eventsByTime, isDragging,
-    } = this.state;
-    let { eventStep } = this.state;
+    this.playInterval = setInterval(() => {
+      const {
+        sliderTimestamp, isDragging,
+      } = this.state;
 
-    if (isDragging) {
-      // don't mess with dragging
-      this.playTimeout = setTimeout(this.play, 1000);
-      return;
-    }
-
-    // find the timeKey according to playTimestamp
-    const timeKeys = _.keys(eventsByTime).sort();
-    let timeKey;
-    for (let i = 0; i < timeKeys.length; i += 1) {
-      if (timeKeys[i] >= playTimestamp) {
-        timeKey = timeKeys[i];
-        break;
-      }
-    }
-
-    if (!timeKey) {
-      if (timeKeys.length) {
-        // move the slider bar to end
-        this.setState({ sliderTimestamp: Date.now() });
-      }
-      // doesn't have events shown, loop by 1 second for next iteration
-      this.playTimeout = setTimeout(this.play, 1000);
-    } else {
-      // group the events at timeKey by location.
-      // note for same timeKey and same location, multiple events may exist,
-      // we need play them step by step (with timestamp not changing).
-      const groupedEvents = _.groupBy(eventsByTime[timeKey], 'location');
-      const locs = _.keys(groupedEvents);
-
-      let maxStep = 0;
-      const events = [];
-
-      _.each(locs, (loc) => {
-        const step = groupedEvents[loc].length - 1;
-        if (step > maxStep) {
-          maxStep = step;
-        }
-        events.push(groupedEvents[loc][Math.min(eventStep, step)]);
-      });
-
-      let nextTS = Number(timeKey);
-
-      eventStep += 1;
-      if (eventStep > maxStep) {
-        eventStep = 0;
-        nextTS += 1;
+      if (isDragging) {
+        // do not play slider when dragging
+        return;
       }
 
-      const newState = { activeEvents: events, playTimestamp: nextTS, eventStep };
-      if (playTimestamp === sliderTimestamp) {
-        newState.sliderTimestamp = nextTS;
+      let ts = sliderTimestamp + SLIDER_FORWARD_INTERVAL;
+      const currentTimeKey = getTimeKey(new Date());
+      if (ts > currentTimeKey) {
+        ts = currentTimeKey;
       }
-      this.setState(newState);
-
-      // Has events shown, timeout by configured fade time
-      this.playTimeout = setTimeout(this.play, SLIDER_EVENT_FADE_TIME);
-    }
+      if (ts !== sliderTimestamp) {
+        this.setState({ sliderTimestamp: ts });
+      }
+    }, SLIDER_FORWARD_PERIOD);
   }
 
   /**
@@ -364,27 +280,29 @@ class App extends React.Component {
    * @param {Object} eventLoc the event location user clicked
    */
   displayEventBox(eventLoc) {
-    const { eventsByLoc, playTimestamp } = this.state;
-    const events = eventsByLoc[eventLoc.location];
+    const { allEvents, sliderTimestamp } = this.state;
 
-    // find the event closet to playTimestamp
+    // find the event closet to and before sliderTimestamp
     let minDistance = Number.MAX_SAFE_INTEGER;
     let event;
 
-    _.each(events, (evt) => {
-      const distance = Math.abs(evt.timestamp - playTimestamp);
-      if (distance < minDistance) {
+    _.each(allEvents, (evt) => {
+      const distance = sliderTimestamp - evt.timeKey;
+      if (distance >= 0 && distance < minDistance && evt.location === eventLoc.location) {
         minDistance = distance;
         event = evt;
       }
     });
+    if (!event) {
+      return;
+    }
 
     // add the event to clickedEvents
     this.setState((prevState) => {
       const newClickedEvents = [...prevState.clickedEvents, event];
       return { clickedEvents: newClickedEvents };
     });
-    // remove the event after a time out
+    // remove clicked event after a time out
     setTimeout(() => {
       this.setState((prevState) => {
         const newClickedEvents = [...prevState.clickedEvents];
@@ -400,17 +318,26 @@ class App extends React.Component {
    */
   render() {
     const {
-      activeEvents, clickedEvents, eventsByLoc, sliderTimestamp,
+      clickedEvents, allEvents, sliderTimestamp,
     } = this.state;
 
-    const eventLocs = _.map(_.keys(eventsByLoc),
-      location => ({ ...countryData[location], location }));
+    const sliderTimeKey = getTimeKey(sliderTimestamp);
+    const events = _.filter(allEvents, e => e.timeKey <= sliderTimeKey);
+    const activeEvents = _.filter(events, e => e.timeKey === sliderTimeKey);
+    const filteredClickedEvents = _.filter(clickedEvents, e => e.timeKey <= sliderTimeKey);
+    const eventLocs = [];
+    _.forEach(events, (e) => {
+      if (!_.find(eventLocs, el => el.location === e.location)) {
+        eventLocs.push({ ...countryData[e.location], location: e.location });
+      }
+    });
+
     return (
       <div className={styles.App}>
         <Sidebar />
         <EventMap
           activeEvents={activeEvents}
-          clickedEvents={clickedEvents}
+          clickedEvents={filteredClickedEvents}
           displayEventBox={this.displayEventBox}
           eventLocs={eventLocs}
         />

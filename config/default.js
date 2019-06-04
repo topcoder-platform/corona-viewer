@@ -24,5 +24,11 @@ module.exports = {
   // batch size of cached events to send to client
   CACHED_EVENTS_SEND_BATCH: process.env.CACHED_EVENTS_SEND_BATCH || 100,
   // period to send cached events to client, in milliseconds
-  CACHED_EVENTS_SEND_PERIOD: process.env.CACHED_EVENTS_SEND_PERIOD || 1000 // 1 second
+  CACHED_EVENTS_SEND_PERIOD: process.env.CACHED_EVENTS_SEND_PERIOD || 1000, // 1 second
+  // URL to get user count
+  USER_COUNT_URL: process.env.USER_COUNT_URL || 'https://api.topcoder.com/v4/looks/1143/run/json',
+  // URL to get challenge count
+  CHALLENGE_COUNT_URL: process.env.CHALLENGE_COUNT_URL || 'https://api.topcoder.com/v4/looks/1145/run/json',
+  // URL to get total payment
+  TOTAL_PAYMENT_URL: process.env.TOTAL_PAYMENT_URL || 'https://api.topcoder.com/v4/looks/1294/run/json'
 }

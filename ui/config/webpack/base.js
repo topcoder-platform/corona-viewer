@@ -13,6 +13,7 @@ module.exports = {
       config: path.resolve(__dirname, '../../src/config'),
       helper: path.resolve(__dirname, '../../src/helper'),
       styles: path.resolve(__dirname, '../../src/styles'),
+      services: path.resolve(__dirname, '../../src/services'),
     },
     extensions: ['*', '.js', '.jsx'],
   },

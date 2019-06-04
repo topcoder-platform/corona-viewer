@@ -29,6 +29,9 @@ The following parameters can be set in config file or in env variables:
 - `CACHED_EVENTS_CLEAR_PERIOD`: period to clear expired cached events, in milliseconds
 - `CACHED_EVENTS_SEND_BATCH`: batch size of cached events to send to client
 - `CACHED_EVENTS_SEND_PERIOD`: period to send cached events to client, in milliseconds
+- `USER_COUNT_URL`: URL to get user count
+- `CHALLENGE_COUNT_URL`: URL to get challenge count
+- `TOTAL_PAYMENT_URL`: URL to get total payment
 
 ## UI Configuration
 
@@ -101,3 +104,11 @@ This will build the production distribution for the UI and run the server. The U
   Instead, in the src/app.js, there is a global cached events array holding the last 7 days events (configurable by `CACHED_EVENTS_MAX_DAYS_BACK`);
   Each client connection will at first retrieve the cached events, then for new event arrived later after client connected, it will be immediately sent to client;
   so the Kafka calls are minimal, there is only one consumer connection to Kafka, no matter how many concurrent users.
+
+## Verification
+
+- setup local kafka server as above
+- start viewer app
+- run `node script/init-events` to add some past events
+- run `node script/send-event {index}`, where {index} is 0-4, to add some latest events
+- check viewer UI

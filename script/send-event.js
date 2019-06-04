@@ -10,7 +10,7 @@ const logger = require('../src/common/logger')
 
 const sampleEvents = require('./events.json')
 
-const idx = process.argv[2]
+const idx = Number(process.argv[2])
 const event = sampleEvents[idx]
 
 if (!event) {

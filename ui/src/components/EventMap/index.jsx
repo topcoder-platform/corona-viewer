@@ -131,7 +131,7 @@ const EventMap = ({
       {
         clickedEvents.map(event => (
           <EventBox
-            key={event.uuid}
+            key={`click-${event.uuid}`}
             lat={event.lat}
             lng={event.lng}
             event={event}

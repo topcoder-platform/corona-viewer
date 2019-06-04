@@ -10,11 +10,13 @@ export const GOOGLE_MAP_KEY = process.env.GOOGLE_MAP_KEY || 'AIzaSyCkA6FtiFlzkKG
 // max days back of events to display on the map
 export const MAX_DAYS_BACK = 7;
 // when clicked, duration an event box will appear before it fades away
-export const CLICK_EVENT_FADE_TIME = 2000; // milliseconds
-// when slider play forwards, duration an event box will appear before it fades away
-export const SLIDER_EVENT_FADE_TIME = 1000; // milliseconds
+export const CLICK_EVENT_FADE_TIME = 3000; // milliseconds
+// slider play forward period
+export const SLIDER_FORWARD_PERIOD = 1000; // milliseconds
+// slider play forward interval
+export const SLIDER_FORWARD_INTERVAL = 60000; // milliseconds
 // interval to cleanup expired events
-export const EXPIRED_EVENTS_CLEAN_INTERVAL = 5000; // milliseconds
+export const EXPIRED_EVENTS_CLEAN_INTERVAL = 60000; // milliseconds
 // Event types handled by the UI
 export const ALLOWED_EVENT_TYPES = [
   'USER_REGISTRATION',
