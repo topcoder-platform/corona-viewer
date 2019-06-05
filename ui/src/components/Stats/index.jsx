@@ -78,7 +78,7 @@ class Stats extends React.Component {
           <strong>
             {`$${formatNumber(data.totalPayment)}`}
           </strong>
-          <small>IN PRIZES // LAST 7 DAYS</small>
+          <small>IN PRIZES</small>
         </div>
       </div>
     );
