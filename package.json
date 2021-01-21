@@ -28,7 +28,7 @@
     "lodash": "^4.17.11",
     "moment": "^2.24.0",
     "no-kafka": "^3.4.3",
-    "socket.io": "^2.2.0",
+    "socket.io": "^2.4.0",
     "superagent": "^5.0.5",
     "winston": "^3.1.0"
   },
