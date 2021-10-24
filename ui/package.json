@@ -19,8 +19,8 @@
     "lodash": "^4.17.11",
     "moment": "^2.24.0",
     "prop-types": "^15.6.2",
-    "react": "^16.8.3",
-    "react-dom": "^16.8.3",
+    "react": "^16.14.0",
+    "react-dom": "^16.14.0",
     "socket.io-client": "^2.2.0",
     "superagent": "^5.0.5",
     "uuid": "^3.3.2"
