@@ -20,7 +20,7 @@
     "standard": "^12.0.1"
   },
   "dependencies": {
-    "bluebird": "^3.5.1",
+    "bluebird": "^3.7.2",
     "config": "^3.0.0",
     "cors": "^2.7.1",
     "express": "^4.14.0",
