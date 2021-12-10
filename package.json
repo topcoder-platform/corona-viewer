@@ -29,7 +29,7 @@
     "moment": "^2.24.0",
     "no-kafka": "^3.4.3",
     "socket.io": "^2.2.0",
-    "superagent": "^5.0.5",
+    "superagent": "^5.3.1",
     "winston": "^3.1.0"
   },
   "standard": {
